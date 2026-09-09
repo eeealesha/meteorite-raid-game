@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Метеоритный рейс</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div id="game-wrap">
+        <canvas id="game" width="800" height="600"></canvas>
+
+        <div id="overlay-menu" class="overlay">
+            <h1 class="title">МЕТЕОРИТНЫЙ РЕЙС</h1>
+            <p class="subtitle">Космическая астероидная оборона</p>
+            <div class="controls">
+                <p><span class="key">←</span> <span class="key">→</span> — движение</p>
+                <p><span class="key">Space</span> — огонь</p>
+                <p><span class="key">P</span> — пауза</p>
+            </div>
+            <p id="menu-record" class="record"></p>
+            <button id="btn-play" class="btn">Играть</button>
+            <button id="btn-sound" class="btn btn-small">Звук: вкл</button>
+        </div>
+
+        <div id="overlay-pause" class="overlay hidden">
+            <h2 class="center">ПАУЗА</h2>
+            <p class="center dim">Нажми P или кнопку, чтобы продолжить</p>
+            <button id="btn-resume" class="btn">Продолжить</button>
+            <button id="btn-menu" class="btn btn-small">В меню</button>
+        </div>
+
+        <div id="overlay-results" class="overlay hidden">
+            <h2 id="results-title" class="center">ИГРА ОКОНЧЕНА</h2>
+            <p class="center big" id="results-score"></p>
+            <p class="center dim" id="results-record"></p>
+            <button id="btn-restart" class="btn">Заново</button>
+            <button id="btn-results-menu" class="btn btn-small">В меню</button>
+        </div>
+
+        <div id="transition" class="transition hidden">
+            <h2 id="transition-text">СЕКТОР 1</h2>
+        </div>
+    </div>
+
+    <div id="hud" class="hud hidden">
+        <span id="hud-score">Очки: 0</span>
+        <span id="hud-sector">Сектор 1</span>
+        <span id="hud-time">30</span>
+        <span id="hud-powerups" class="hud-right"></span>
+        <span id="hud-lives">Жизни: 3</span>
+    </div>
+
+    <script src="./js/config.js"></script>
+    <script src="./js/sound.js"></script>
+    <script src="./js/input.js"></script>
+    <script src="./js/star.js"></script>
+    <script src="./js/ship.js"></script>
+    <script src="./js/laser.js"></script>
+    <script src="./js/asteroid.js"></script>
+    <script src="./js/particle.js"></script>
+    <script src="./js/powerup.js"></script>
+    <script src="./js/boss.js"></script>
+    <script src="./js/main.js"></script>
+</body>
+</html>
