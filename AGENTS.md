@@ -15,6 +15,7 @@ Browser port of the Pygame game in `game.py`, prepared for GitHub Pages. The por
 - `browser/index.html` — entry point; loads scripts in order: config, sound, input, star, ship, laser, asteroid, particle, powerup, boss, main. All paths are relative (`./`), so the game works from a `/repository/` subfolder on GitHub Pages.
 - `browser/js/config.js` — CFG (sectors, boss, timings), DEBUG check-mode (OFF by default), STORAGE_KEY `meteoriteRaidBestScore`. When `DEBUG.enabled` is true (`skipToSector 1–4`, `sectorTimeOverride`, `godMode`, `instantPowerups`, `bossHp`), `window.__gameTest` exposes the game state for tests; in normal play the hook is absent.
 - Local run: `cd browser && python3 -m http.server 8000` → http://localhost:8000/ (or repo root → `/browser/`).
+- Published: https://eeealesha.github.io/meteorite-raid-game/ — GitHub Pages, repo `eeealesha/meteorite-raid-game` (public). Deploy is `.github/workflows/pages.yml`: on push to `main` it uploads the `browser/` folder as the Pages artifact (no build step, no dependencies).
 - Verification (no committed tests): headless smoke harnesses in `/var/folders/8x/13w0c0k17yn3sjmq4zw7bxlh0000gn/T/opencode/smoke_{a,b,c}.js` stub DOM/canvas/audio via `vm.runInThisContext`, correct `js/config.js` via source replacement, and assert gameplay with `window.__gameTest`; `node --check js/*.js` for syntax. Visual/sound checks require a real browser.
 
 ## Key rules / agreements (from запрос.rtf)
