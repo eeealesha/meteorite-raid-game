@@ -13,57 +13,94 @@ const Touch = (() => {
         { id: "btn-pause", tap: "KeyP" },
     ];
     const OVERLAYS = ["overlay-menu", "overlay-pause", "overlay-results"];
-    const active = [];          // удерживаемые кнопки: { el, code }
+    const active = [];          // удерживаемые кнопки: { el, code, pointerId }
     let container = null;
     let attached = false;
 
     function isTouchDevice() {
         if (typeof DEBUG !== "undefined" && DEBUG.enabled && DEBUG.forceTouch) return true;
+        if (typeof navigator !== "undefined" && navigator.maxTouchPoints > 0) return true;
         if ("ontouchstart" in window) return true;
         return !!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
     }
 
-    function releaseButton(el) {
-        const i = active.findIndex((b) => b.el === el);
-        if (i < 0) return;
+    // Сбой звука (например, лимит AudioContext на iOS) не должен
+    // отменять нажатие кнопки, поэтому звук всегда в try/catch
+    function safeUnlock() {
+        try { Sound.unlock(); } catch (err) { /* управление важнее звука */ }
+    }
+
+    function releaseEntry(i) {
         const b = active.splice(i, 1)[0];
         b.el.classList.remove("active");
         Input.release(b.code);
     }
 
-    function releaseAll() {
-        while (active.length) {
-            const b = active.pop();
-            b.el.classList.remove("active");
-            Input.release(b.code);
+    function releaseButton(el) {
+        for (let i = active.length - 1; i >= 0; i--) {
+            if (active[i].el === el) releaseEntry(i);
         }
     }
 
-    function bindButton(el, code, tap) {
-        el.addEventListener("pointerdown", (e) => {
-            e.preventDefault();
-            try { el.setPointerCapture(e.pointerId); } catch (err) { /* не критично */ }
-            Sound.unlock();
-            if (tap) {
-                // мгновенное нажатие: пауза/продолжить
-                Input.press(tap);
-                Input.release(tap);
-                return;
-            }
-            if (el.classList.contains("active")) return;
-            el.classList.add("active");
-            active.push({ el, code });
-            Input.press(code);
-        });
+    function releaseAll() {
+        while (active.length) releaseEntry(active.length - 1);
+    }
 
+    // Отпускание по pointerId: работает и если палец ушёл за пределы кнопки
+    function releaseByPointer(pointerId) {
+        for (let i = active.length - 1; i >= 0; i--) {
+            if (active[i].pointerId === pointerId) releaseEntry(i);
+        }
+    }
+
+    function bindHold(el, code) {
+        const down = (e) => {
+            if (e && e.cancelable) e.preventDefault();
+            if (el.classList.contains("active")) return;
+            const pointerId = e && e.pointerId !== undefined ? e.pointerId : null;
+            el.classList.add("active");
+            active.push({ el, code, pointerId });
+            Input.press(code);   // сначала ввод...
+            safeUnlock();        // ...потом звук
+            if (pointerId !== null) {
+                try { el.setPointerCapture(pointerId); } catch (err) { /* не критично */ }
+            }
+        };
         const up = (e) => {
-            if (tap) return;
-            if (e) e.preventDefault();
+            if (e && e.cancelable) e.preventDefault();
             releaseButton(el);
         };
-        el.addEventListener("pointerup", up);
-        el.addEventListener("pointercancel", up);
-        el.addEventListener("lostpointercapture", up);
+
+        if (window.PointerEvent) {
+            el.addEventListener("pointerdown", down);
+            el.addEventListener("pointerup", up);
+            el.addEventListener("pointercancel", up);
+            el.addEventListener("lostpointercapture", up);
+        } else {
+            // старые Safari без Pointer Events
+            el.addEventListener("touchstart", down, { passive: false });
+            el.addEventListener("touchend", up);
+            el.addEventListener("touchcancel", up);
+            el.addEventListener("mousedown", down);
+            el.addEventListener("mouseup", up);
+            el.addEventListener("mouseleave", up);
+        }
+        el.addEventListener("contextmenu", (e) => e.preventDefault());
+    }
+
+    function bindTap(el, code) {
+        const fire = (e) => {
+            if (e && e.cancelable) e.preventDefault();
+            Input.press(code);
+            Input.release(code);
+            safeUnlock();
+        };
+        if (window.PointerEvent) {
+            el.addEventListener("pointerdown", fire);
+        } else {
+            el.addEventListener("touchstart", fire, { passive: false });
+            el.addEventListener("mousedown", fire);
+        }
         el.addEventListener("contextmenu", (e) => e.preventDefault());
     }
 
@@ -86,7 +123,16 @@ const Touch = (() => {
 
         for (const cfg of BUTTONS) {
             const el = document.getElementById(cfg.id);
-            if (el) bindButton(el, cfg.code, cfg.tap);
+            if (!el) continue;
+            if (cfg.tap) bindTap(el, cfg.tap);
+            else bindHold(el, cfg.code);
+        }
+
+        // палец отпущен где угодно — снять удержание
+        const pointerEnd = (e) => releaseByPointer(e.pointerId);
+        if (window.PointerEvent) {
+            document.addEventListener("pointerup", pointerEnd);
+            document.addEventListener("pointercancel", pointerEnd);
         }
 
         if (typeof MutationObserver === "function") {
@@ -104,7 +150,7 @@ const Touch = (() => {
         });
 
         // первый жест разблокирует звук на iOS
-        document.addEventListener("pointerdown", () => Sound.unlock(), { once: true, passive: true });
+        document.addEventListener("pointerdown", safeUnlock, { once: true, passive: true });
 
         syncVisibility();
     }

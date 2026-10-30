@@ -127,6 +127,8 @@ body {
 
 .record { color: #ffd966; font-size: 16px; margin: 4px 0; }
 
+.build { margin: 0; color: #4a5262; font-size: 11px; letter-spacing: 1px; }
+
 .btn {
     cursor: pointer;
     min-width: 180px;
@@ -186,12 +188,11 @@ body {
 }
 
 #touch-controls {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    position: relative;
+    width: 100%;
     z-index: 15;
     display: none;
+    flex: 0 0 auto;
     align-items: flex-end;
     justify-content: space-between;
     gap: 12px;
@@ -269,7 +270,14 @@ body {
 
     body {
         justify-content: center;
-        padding: var(--safe-top) 0 calc(var(--controls-h) + var(--safe-bottom));
+        padding: var(--safe-top) 0 0;
+    }
+
+    /* поле центрируется в свободном месте над полосой кнопок,
+       поэтому полоса всегда остаётся в пределах видимой области */
+    #game-wrap {
+        flex: 0 0 auto;
+        margin: auto 0;
     }
 
     #touch-controls { display: flex; }

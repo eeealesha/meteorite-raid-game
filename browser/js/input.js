@@ -20,7 +20,9 @@ const Input = (() => {
         if (pressed.has(code)) return;
         pressed.add(code);
         handlers.forEach((fn) => fn(code));
-        Sound.unlock();
+        // сбой звука (лимит AudioContext на iOS и т.п.) не должен
+        // отменять нажатие и ломать управление
+        try { Sound.unlock(); } catch (e) { /* управление важнее */ }
     }
 
     function release(code) { pressed.delete(code); }
