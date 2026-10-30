@@ -2,13 +2,24 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#04040a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Метеоритный рейс</title>
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
     <div id="game-wrap">
         <canvas id="game" width="800" height="600"></canvas>
+
+        <div id="hud" class="hud hidden">
+            <span id="hud-score">Очки: 0</span>
+            <span id="hud-sector">Сектор 1</span>
+            <span id="hud-time">30</span>
+            <span id="hud-powerups" class="hud-right"></span>
+            <span id="hud-lives">Жизни: 3</span>
+        </div>
 
         <div id="overlay-menu" class="overlay">
             <h1 class="title">МЕТЕОРИТНЫЙ РЕЙС</h1>
@@ -18,6 +29,7 @@
                 <p><span class="key">Space</span> — огонь</p>
                 <p><span class="key">P</span> — пауза</p>
             </div>
+            <p class="touch-hint">Движение — стрелки внизу слева, огонь — кнопка справа</p>
             <p id="menu-record" class="record"></p>
             <button id="btn-play" class="btn">Играть</button>
             <button id="btn-sound" class="btn btn-small">Звук: вкл</button>
@@ -43,17 +55,21 @@
         </div>
     </div>
 
-    <div id="hud" class="hud hidden">
-        <span id="hud-score">Очки: 0</span>
-        <span id="hud-sector">Сектор 1</span>
-        <span id="hud-time">30</span>
-        <span id="hud-powerups" class="hud-right"></span>
-        <span id="hud-lives">Жизни: 3</span>
+    <div id="touch-controls" class="hidden">
+        <div class="touch-group">
+            <button id="btn-left" class="touch-btn" type="button" aria-label="Влево">◀</button>
+            <button id="btn-right" class="touch-btn" type="button" aria-label="Вправо">▶</button>
+        </div>
+        <div class="touch-group">
+            <button id="btn-pause" class="touch-btn touch-btn-small" type="button" aria-label="Пауза">❚❚</button>
+            <button id="btn-fire" class="touch-btn touch-btn-fire" type="button" aria-label="Огонь">ОГОНЬ</button>
+        </div>
     </div>
 
     <script src="./js/config.js"></script>
     <script src="./js/sound.js"></script>
     <script src="./js/input.js"></script>
+    <script src="./js/touch.js"></script>
     <script src="./js/star.js"></script>
     <script src="./js/ship.js"></script>
     <script src="./js/laser.js"></script>

@@ -1,5 +1,8 @@
 // ==============================================================
-//  Ввод с клавиатуры. Игровые клавиши не прокручивают страницу.
+//  Ввод. Общий путь для клавиатуры и экранных тач-кнопок:
+//  игровые клавиши не прокручивают страницу, состояние кнопок
+//  живёт в одном наборе, поэтому остальной код о вводе
+//  ничего не знает.
 // ==============================================================
 const Input = (() => {
     const pressed = new Set();
@@ -12,22 +15,28 @@ const Input = (() => {
     // onKey(code) вызывается при НАЖАТИИ (keydown) любой клавиши
     function onAnyKey(fn) { handlers.push(fn); }
 
+    // Нажатие/отпускание клавиши — одинаково для клавиатуры и тач-кнопок
+    function press(code) {
+        if (pressed.has(code)) return;
+        pressed.add(code);
+        handlers.forEach((fn) => fn(code));
+        Sound.unlock();
+    }
+
+    function release(code) { pressed.delete(code); }
+
     function attach() {
         if (attached) return;
         attached = true;
         window.addEventListener("keydown", (e) => {
             if (GAME_KEYS.has(e.code)) e.preventDefault();
-            if (!e.repeat) {
-                pressed.add(e.code);
-                handlers.forEach((fn) => fn(e.code));
-                Sound.unlock();
-            }
+            if (!e.repeat) press(e.code);
         });
-        window.addEventListener("keyup", (e) => { pressed.delete(e.code); });
+        window.addEventListener("keyup", (e) => { release(e.code); });
     }
 
     function isDown(code) { return pressed.has(code); }
     function clear() { pressed.clear(); }
 
-    return { attach, isDown, clear, onAnyKey };
+    return { attach, isDown, clear, onAnyKey, press, release };
 })();

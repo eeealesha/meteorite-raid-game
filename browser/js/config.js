@@ -49,6 +49,7 @@ const DEBUG = {
     godMode: false,         // неуязвимость
     instantPowerups: false, // бонус при каждом уничтожении астероида
     bossHp: 0,              // 0 = обычное HP босса (60), иначе — своё значение
+    forceTouch: false,      // показывать тач-кнопки на устройстве с мышью (только для проверки)
 };
 
 const STORAGE_KEY = "meteoriteRaidBestScore";
