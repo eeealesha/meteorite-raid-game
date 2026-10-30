@@ -56,15 +56,12 @@ const Touch = (() => {
     function bindHold(el, code) {
         const down = (e) => {
             if (e && e.cancelable) e.preventDefault();
-            if (el.classList.contains("active")) return;
+            if (el.classList.contains("active")) return;   // защита от повторного события (pointer + touch)
             const pointerId = e && e.pointerId !== undefined ? e.pointerId : null;
             el.classList.add("active");
             active.push({ el, code, pointerId });
             Input.press(code);   // сначала ввод...
             safeUnlock();        // ...потом звук
-            if (pointerId !== null) {
-                try { el.setPointerCapture(pointerId); } catch (err) { /* не критично */ }
-            }
         };
         const up = (e) => {
             if (e && e.cancelable) e.preventDefault();
@@ -72,35 +69,36 @@ const Touch = (() => {
         };
 
         if (window.PointerEvent) {
+            // без setPointerCapture: в Safari lostpointercapture приходит сразу
+            // после pointerdown и мгновенно отпускает кнопку
             el.addEventListener("pointerdown", down);
             el.addEventListener("pointerup", up);
             el.addEventListener("pointercancel", up);
-            el.addEventListener("lostpointercapture", up);
-        } else {
-            // старые Safari без Pointer Events
-            el.addEventListener("touchstart", down, { passive: false });
-            el.addEventListener("touchend", up);
-            el.addEventListener("touchcancel", up);
-            el.addEventListener("mousedown", down);
-            el.addEventListener("mouseup", up);
-            el.addEventListener("mouseleave", up);
         }
+        // дублирующий путь для старых Safari и встроенных браузеров:
+        // повторный вызов down() гасится проверкой класса active
+        el.addEventListener("touchstart", down, { passive: false });
+        el.addEventListener("touchend", up);
+        el.addEventListener("touchcancel", up);
+        el.addEventListener("mousedown", down);
+        el.addEventListener("mouseup", up);
+        el.addEventListener("mouseleave", up);
         el.addEventListener("contextmenu", (e) => e.preventDefault());
     }
 
     function bindTap(el, code) {
         const fire = (e) => {
             if (e && e.cancelable) e.preventDefault();
+            if (el.dataset.tapped === "1") return;
+            el.dataset.tapped = "1";
             Input.press(code);
             Input.release(code);
             safeUnlock();
+            setTimeout(() => { el.dataset.tapped = "0"; }, 300);
         };
-        if (window.PointerEvent) {
-            el.addEventListener("pointerdown", fire);
-        } else {
-            el.addEventListener("touchstart", fire, { passive: false });
-            el.addEventListener("mousedown", fire);
-        }
+        if (window.PointerEvent) el.addEventListener("pointerdown", fire);
+        el.addEventListener("touchstart", fire, { passive: false });
+        el.addEventListener("mousedown", fire);
         el.addEventListener("contextmenu", (e) => e.preventDefault());
     }
 
